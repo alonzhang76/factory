@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生产任务安排表</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        
+        /* 页面容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 标题样式 */
+        h1 {
+            color: #1890ff;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #262626;
+            margin-bottom: 20px;
+        }
+        
+        h3 {
+            color: #404040;
+            margin-bottom: 15px;
+        }
+        
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: inline-block;
+            width: 100px;
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 200px;
+            height: 32px;
+            padding: 4px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        /* 打印预览样式 */
+        #printPreview {
+            margin-top: 20px;
+        }
+        
+        .print-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .print-day-section {
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+        
+        .print-day-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .print-day-section th,
+        .print-day-section td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .print-day-section th {
+            background-color: #f5f5f5;
+        }
+        
+        /* 工具条样式 */
+        .toolbar {
+            margin-bottom: 20px;
+        }
+        
+        /* 打印样式 */
+        @media print {
+            body {
+                font-family: Arial, sans-serif;
+            }
+            
+            /* 移除卡片阴影和其他不必要的样式 */
+            .card {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0;
+            }
+            
+            /* 隐藏不需要打印的元素 */
+            .container > .card:not(:last-child),
+            .btn,
+            h1 {
+                display: none !important;
+            }
+            
+            /* 调整页面边距 */
+            @page {
+                margin: 1cm;
+            }
+            
+            /* 表格样式 */
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 10px;
+            }
+            
+            table, th, td {
+                border: 1px solid #000;
+            }
+            
+            th, td {
+                padding: 2px;
+                text-align: left;
+                line-height: 1.0;
+            }
+            
+            th {
+                background-color: #f2f2f2;
+            }
+            
+            /* 标题样式 */
+            h2 {
+                font-size: 16px;
+                margin-bottom: 5px;
+                margin-top: 0;
+            }
+            
+            h3 {
+                font-size: 14px;
+                margin-bottom: 5px;
+                padding-bottom: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>生产任务安排表</h1>
+        
+        <!-- 日期筛选 -->
+        <div class="card">
+            <h2>日期筛选</h2>
+            <div class="form-group">
+                <label for="startDate">开始日期：</label>
+                <input type="date" id="startDate">
+            </div>
+            <div class="form-group">
+                <label for="endDate">结束日期：</label>
+                <input type="date" id="endDate">
+            </div>
+            <div class="form-group">
+                <label for="employeeSelect">员工姓名：</label>
+                <select id="employeeSelect">
+                    <option value="">所有员工</option>
+                </select>
+            </div>
+            <div class="toolbar">
+                <button id="generatePrintPreviewBtn" class="btn btn-primary">生成预览</button>
+                <button id="printBtn" class="btn btn-secondary">打印</button>
+            </div>
+        </div>
+        
+        <!-- 打印预览 -->
+        <div class="card">
+            <div id="printPreview"></div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+            const employeeSelect = document.getElementById('employeeSelect');
+            const generatePrintPreviewBtn = document.getElementById('generatePrintPreviewBtn');
+            const printBtn = document.getElementById('printBtn');
+            const printPreview = document.getElementById('printPreview');
+            
+            // 设置默认日期范围
+            const today = new Date();
+            startDate.value = today.toISOString().split('T')[0];
+            
+            // 默认结束日期为10天后
+            const defaultEndDate = new Date(today);
+            defaultEndDate.setDate(today.getDate() + 10);
+            endDate.value = defaultEndDate.toISOString().split('T')[0];
+            
+            // 监听localStorage变化，当生产计划安排表中的日期变化时，自动更新生产任务安排表
+            window.addEventListener('storage', function(event) {
+                if (event.key === 'scheduleYear' || event.key === 'scheduleMonth') {
+                    // 重新生成预览表格（如果当前有预览）
+                    if (printPreview.innerHTML !== '') {
+                        generatePrintPreview();
+                    }
+                }
+            });
+            
+            // 初始化员工下拉框函数
+            function initEmployeeSelect() {
+                try {
+                    // 从localStorage获取员工数据
+                    const employeesJson = localStorage.getItem('employees');
+                    console.log('员工数据JSON:', employeesJson);
+                    const employees = JSON.parse(employeesJson || '[]');
+                    
+                    console.log('解析后的员工数据:', employees);
+                    
+                    // 清空除了第一个选项外的所有选项
+                    while (employeeSelect.options.length > 1) {
+                        employeeSelect.remove(1);
+                    }
+                    
+                    // 添加员工选项
+                    employees.forEach(emp => {
+                        const option = document.createElement('option');
+                        option.value = emp.code;
+                        option.textContent = emp.name;
+                        employeeSelect.appendChild(option);
+                    });
+                    
+                    console.log('员工下拉框初始化完成，共添加', employees.length, '个员工选项');
+                } catch (error) {
+                    console.error('初始化员工下拉框时出错:', error);
+                    // 如果解析失败，显示错误信息但不中断程序
+                }
+            }
+            
+            // 初始化员工下拉框
+            initEmployeeSelect();
+            
+            // 生成打印预览事件
+            generatePrintPreviewBtn.addEventListener('click', function() {
+                generatePrintPreview();
+            });
+            
+            // 打印事件
+            printBtn.addEventListener('click', function() {
+                window.print();
+            });
+            
+            function generatePrintPreview() {
+                try {
+                    const startDateValue = startDate.value;
+                    const endDateValue = endDate.value;
+                    const selectedEmployeeCode = employeeSelect.value;
+                    
+                    console.log('generatePrintPreview函数被调用');
+                    console.log('开始日期:', startDateValue);
+                    console.log('结束日期:', endDateValue);
+                    console.log('选择的员工:', selectedEmployeeCode);
+                    
+                    if (!startDateValue || !endDateValue) {
+                        alert('请选择完整的日期范围！');
+                        return;
+                    }
+                    
+                    // 从localStorage获取排班数据
+                    const scheduleDataJson = localStorage.getItem('productionSchedule');
+                    const orderProcessesJson = localStorage.getItem('orderProcesses');
+                    const employeesJson = localStorage.getItem('employees');
+                    
+                    console.log('排班数据JSON:', scheduleDataJson);
+                    console.log('工序数据JSON:', orderProcessesJson);
+                    console.log('员工数据JSON:', employeesJson);
+                    
+                    const scheduleData = JSON.parse(scheduleDataJson || '{}');
+                    const orderProcesses = JSON.parse(orderProcessesJson || '[]');
+                    const employees = JSON.parse(employeesJson || '[]');
+                    
+                    // 注意：不要对orderProcesses数组进行排序，因为localStorage中的orderProcesses已经是排序后的版本
+                    // scheduleData中的rowIndex是基于这个排序后的数组的索引
+                    
+                    console.log('解析后的排班数据:', scheduleData);
+                    console.log('解析后的工序数据:', orderProcesses);
+                    console.log('解析后的员工数据:', employees);
+                    
+                    // 创建员工ID到姓名的映射
+                    const employeeMap = {};
+                    employees.forEach(emp => {
+                        employeeMap[emp.code] = emp.name;
+                    });
+                    
+                    console.log('员工ID到姓名的映射:', employeeMap);
+                    
+                    // 创建一个模拟表格结构用于获取数据
+                    const mockTable = createMockTable();
+                    
+                    // 整理需要打印的任务 - 先按行索引分组
+                    const tasksByRow = {};
+                    
+                    // 遍历所有排班数据
+                    for (const key in scheduleData) {
+                        const [rowIndex, colIndex] = key.split('-').map(Number);
+                        const cellData = scheduleData[key];
+                        
+                        // 注意：表格的表头行占用了rowIndex=0，所以需要减去1才能匹配orderProcesses数组的索引
+                        const processIndex = rowIndex - 1;
+                        
+                        // 获取行数据
+                        const processData = orderProcesses[processIndex];
+                        if (!processData) continue;
+                        
+                        const customer = processData.customer;
+                        const orderNumber = processData.orderNumber;
+                        const quantity = processData.quantity;
+                        const processName = processData.processName;
+                        const rowColor = processData.color || '#ffffff';
+                        
+                        // 获取日期
+                        const headerRow = mockTable.querySelector('thead tr');
+                        // 由于mockTable只包含日期列，而原始表格有4个基础列（客户、订单号、数量、工序名称），
+                        // 所以需要将colIndex减去4才能得到mockTable中对应的日期列索引
+                        const dateColIndex = colIndex - 4;
+                        
+                        let dateText = null;
+                        if (headerRow && headerRow.cells[dateColIndex]) {
+                            const thElement = headerRow.cells[dateColIndex];
+                            // 从data属性获取ISO格式的日期
+                            dateText = thElement.getAttribute('data-date');
+                        }
+                        
+                        // 检查日期是否在范围内
+                        if (dateText && dateText >= startDateValue && dateText <= endDateValue) {
+                            // 检查单元格是否有排班数据
+                            if (cellData && (cellData.dayShift || cellData.nightShift)) {
+                                // 员工筛选：如果选择了员工，则只显示包含该员工的任务
+                                const hasSelectedEmployee = !selectedEmployeeCode || 
+                                    cellData.dayShift === selectedEmployeeCode || 
+                                    cellData.nightShift === selectedEmployeeCode;
+                                      
+                                if (hasSelectedEmployee) {
+                                    // 按行索引分组，确保同一行的所有数据都在一起
+                                    if (!tasksByRow[rowIndex]) {
+                                        tasksByRow[rowIndex] = {
+                                            rowIndex: rowIndex,
+                                            customer: customer,
+                                            orderNumber: orderNumber,
+                                            quantity: quantity,
+                                            processName: processName,
+                                            color: rowColor,
+                                            days: [] // 存储该行内所有有颜色的天数
+                                        };
+                                    }
+                                      
+                                    // 将该日期的排班数据添加到行数据中
+                                    tasksByRow[rowIndex].days.push({
+                                        date: dateText,
+                                        dayShift: cellData.dayShift || '',
+                                        nightShift: cellData.nightShift || '',
+                                        dayShiftName: employeeMap[cellData.dayShift] || cellData.dayShift || '',
+                                        nightShiftName: employeeMap[cellData.nightShift] || cellData.nightShift || ''
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 现在将按行分组的数据转换为按日期分组，同时保持行内数据的一致性
+                    const tasksByDate = {};
+                    
+                    // 遍历所有行数据
+                    for (const rowIndex in tasksByRow) {
+                        const rowData = tasksByRow[rowIndex];
+                        
+                        // 遍历该行的所有有颜色的天数
+                        rowData.days.forEach(dayData => {
+                            const dateText = dayData.date;
+                            
+                            // 按日期分组
+                            if (!tasksByDate[dateText]) {
+                                tasksByDate[dateText] = [];
+                            }
+                            
+                            // 创建包含完整行信息的任务条目
+                            tasksByDate[dateText].push({
+                                rowIndex: rowData.rowIndex,
+                                customer: rowData.customer,
+                                orderNumber: rowData.orderNumber,
+                                quantity: rowData.quantity,
+                                processName: rowData.processName,
+                                color: rowData.color,
+                                dayShift: dayData.dayShift,
+                                nightShift: dayData.nightShift,
+                                dayShiftName: dayData.dayShiftName,
+                                nightShiftName: dayData.nightShiftName
+                            });
+                        });
+                    }
+                    
+                    // 对每个日期的任务按rowIndex排序，确保工序行的顺序与原始表格一致
+                    for (const date in tasksByDate) {
+                        tasksByDate[date].sort((a, b) => a.rowIndex - b.rowIndex);
+                    }
+                    
+                    // 移除模拟表格
+                    mockTable.remove();
+
+                    // 生成HTML预览
+                    let previewHTML = '<div class="print-header">';
+                    previewHTML += `<h2 class="text-2xl font-bold text-center mb-2">生产任务安排表</h2>`;
+                    previewHTML += `<p class="text-center text-gray-600 mb-4">${startDateValue} 至 ${endDateValue}</p>`;
+                    previewHTML += '</div>';
+                    
+                    // 按日期排序
+                    const sortedDates = Object.keys(tasksByDate).sort();
+                    
+                    sortedDates.forEach(date => {
+                        // 将ISO格式的日期转换为用户友好的格式
+                        const dateObj = new Date(date);
+                        const monthDay = (dateObj.getMonth() + 1) + '/' + dateObj.getDate();
+                        const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                        const weekdayName = weekdays[dateObj.getDay()];
+                        const friendlyDate = `${monthDay} ${weekdayName}`;
+                        
+                        previewHTML += `<div class="print-day-section mb-8">`;
+                        previewHTML += `<h3 class="text-xl font-semibold mb-3" style="border-bottom: 2px solid #333; padding-bottom: 5px;">${friendlyDate}</h3>`;
+                        previewHTML += `<table class="w-full border-collapse">`;
+                        previewHTML += `<thead>`;
+                        previewHTML += `<tr>`;
+                        previewHTML += `<th class="border border-gray-300 p-2 text-left">客户</th>`;
+                        previewHTML += `<th class="border border-gray-300 p-2 text-left">订单号</th>`;
+                        previewHTML += `<th class="border border-gray-300 p-2 text-left">数量</th>`;
+                        previewHTML += `<th class="border border-gray-300 p-2 text-left">工序名称</th>`;
+                        previewHTML += `<th class="border border-gray-300 p-2 text-left">白班</th>`;
+                        previewHTML += `<th class="border border-gray-300 p-2 text-left">白班任务数</th>`;
+                        previewHTML += `<th class="border border-gray-300 p-2 text-left">夜班</th>`;
+                        previewHTML += `<th class="border border-gray-300 p-2 text-left">夜班任务数</th>`;
+                        previewHTML += `</tr>`;
+                        previewHTML += `</thead>`;
+                        previewHTML += `<tbody>`;
+                        
+                        // 添加任务行
+                        tasksByDate[date].forEach(task => {
+                            previewHTML += `<tr style="background-color: ${task.color}">`;
+                            previewHTML += `<td class="border border-gray-300 p-2">${task.customer}</td>`;
+                            previewHTML += `<td class="border border-gray-300 p-2">${task.orderNumber}</td>`;
+                            previewHTML += `<td class="border border-gray-300 p-2">${task.quantity}</td>`;
+                            previewHTML += `<td class="border border-gray-300 p-2">${task.processName}</td>`;
+                            previewHTML += `<td class="border border-gray-300 p-2">${task.dayShiftName}</td>`;
+                            previewHTML += `<td class="border border-gray-300 p-2"><input type="text" class="task-quantity" style="width: 100%; border: none; padding: 0; text-align: left;"></td>`;
+                            previewHTML += `<td class="border border-gray-300 p-2">${task.nightShiftName}</td>`;
+                            previewHTML += `<td class="border border-gray-300 p-2"><input type="text" class="task-quantity" style="width: 100%; border: none; padding: 0; text-align: left;"></td>`;
+                            previewHTML += `</tr>`;
+                        });
+                        
+                        previewHTML += `</tbody>`;
+                        previewHTML += `</table>`;
+                        previewHTML += `</div>`;
+                    });
+                    
+                    // 如果没有任务
+                    if (sortedDates.length === 0) {
+                        previewHTML += `<div class="text-center text-gray-500 py-10">该日期范围内没有安排的任务</div>`;
+                    }
+                    
+                    // 更新预览
+                    printPreview.innerHTML = previewHTML;
+                } catch (error) {
+                    console.error('生成预览时出错:', error);
+                    alert('生成预览时发生错误，请查看控制台获取详细信息。');
+                }
+            }
+            
+            // 创建模拟表格结构用于获取日期
+            function createMockTable() {
+                const mockTable = document.createElement('table');
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                
+                // 从localStorage获取同步的年份和月份，如果没有则使用当前年份和月份
+                const displayYear = parseInt(localStorage.getItem('scheduleYear')) || new Date().getFullYear();
+                const displayMonth = parseInt(localStorage.getItem('scheduleMonth')) || new Date().getMonth();
+                
+                // 获取当月的天数
+                const firstDay = new Date(displayYear, displayMonth, 1);
+                const lastDay = new Date(displayYear, displayMonth + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                
+                // 创建日期到索引的映射
+                const dateToIndex = {};
+                let index = 0;
+                
+                // 添加日期列头（只生成日期列，不包括固定列）
+                let currentDate = new Date(displayYear, displayMonth, 1);
+                while (currentDate <= lastDay) {
+                    const th = document.createElement('th');
+                    th.className = 'date-header';
+                    
+                    // 获取本地时间的ISO格式日期字符串（用于日期比较）
+                    // 使用padStart确保月份和日期都是两位数
+                    const year = currentDate.getFullYear();
+                    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(currentDate.getDate()).padStart(2, '0');
+                    const isoDate = `${year}-${month}-${day}`;
+                    // 设置ISO格式日期为data属性
+                    th.setAttribute('data-date', isoDate);
+                    
+                    // 存储日期到索引的映射
+                    dateToIndex[isoDate] = index;
+                    index++;
+                    
+                    // 格式化日期显示（月/日）
+                    const monthDay = (currentDate.getMonth() + 1) + '/' + currentDate.getDate();
+                    
+                    // 获取星期几的中文名称
+                    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                    const weekdayName = weekdays[currentDate.getDay()];
+                    
+                    th.innerHTML = `${monthDay}<br><span class="text-gray-400">${weekdayName}</span>`;
+                    headerRow.appendChild(th);
+                    
+                    // 下一天
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                
+                // 将日期到索引的映射存储在表格上，方便后续使用
+                mockTable.dateToIndex = dateToIndex;
+                
+                thead.appendChild(headerRow);
+                mockTable.appendChild(thead);
+                
+                // 隐藏模拟表格
+                mockTable.style.display = 'none';
+                document.body.appendChild(mockTable);
+                
+                return mockTable;
+            }
+        });
+    </script>
+</body>
+</html>
