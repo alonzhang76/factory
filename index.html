@@ -612,6 +612,9 @@
       <div class="toolbar">
         <input type="text" placeholder="搜索订单信息..." id="order-search"/>
         <select id="order-status"><option>全部状态</option><option>待生产</option><option>生产中</option><option>已完成</option></select>
+        <input type="date" id="start-delivery-date" placeholder="开始日期"/>
+        <input type="date" id="end-delivery-date" placeholder="结束日期"/>
+        <button class="button primary" id="query-order"><i class="fas fa-search"></i> 查询</button>
         <button class="button default" id="reset-order"><i class="fas fa-undo"></i> 重置</button>
         <button class="button primary" id="add-order-btn"><i class="fas fa-plus"></i> 新增订单</button>
       </div>
@@ -4577,6 +4580,8 @@
       // 搜索和筛选功能
       const searchTerm = document.getElementById('order-search').value.toLowerCase().trim();
       const statusFilter = document.getElementById('order-status').value;
+      const startDateFilter = document.getElementById('start-delivery-date').value;
+      const endDateFilter = document.getElementById('end-delivery-date').value;
       
       // 过滤订单数据
       let filteredOrders = allOrders;
@@ -4603,6 +4608,41 @@
       // 应用状态筛选
       if (statusFilter && statusFilter !== '全部状态') {
         filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
+      }
+      
+      // 应用日期筛选
+      if (startDateFilter || endDateFilter) {
+        filteredOrders = filteredOrders.filter(order => {
+          // 确保order.deliveryDate是有效的日期字符串
+          if (!order.deliveryDate) return false;
+          
+          const deliveryDate = new Date(order.deliveryDate);
+          let startDate = null;
+          let endDate = null;
+          
+          if (startDateFilter) {
+            startDate = new Date(startDateFilter);
+            // 设置为当天的开始时间
+            startDate.setHours(0, 0, 0, 0);
+          }
+          
+          if (endDateFilter) {
+            endDate = new Date(endDateFilter);
+            // 设置为当天的结束时间
+            endDate.setHours(23, 59, 59, 999);
+          }
+          
+          // 检查交货日期是否在筛选范围内
+          let isInRange = true;
+          if (startDate) {
+            isInRange = isInRange && deliveryDate >= startDate;
+          }
+          if (endDate) {
+            isInRange = isInRange && deliveryDate <= endDate;
+          }
+          
+          return isInRange;
+        });
       }
       
       // 计算订单数量合计
@@ -5374,6 +5414,11 @@
         document.getElementById('order-status').addEventListener('change', renderOrders);
       }
       
+      // 为查询按钮添加点击事件
+      if (document.getElementById('query-order')) {
+        document.getElementById('query-order').addEventListener('click', renderOrders);
+      }
+      
       // 为重置按钮添加点击事件
       if (document.getElementById('reset-order')) {
         document.getElementById('reset-order').addEventListener('click', function() {
@@ -5382,6 +5427,12 @@
           }
           if (document.getElementById('order-status')) {
             document.getElementById('order-status').value = '全部状态';
+          }
+          if (document.getElementById('start-delivery-date')) {
+            document.getElementById('start-delivery-date').value = '';
+          }
+          if (document.getElementById('end-delivery-date')) {
+            document.getElementById('end-delivery-date').value = '';
           }
           renderOrders();
         });
