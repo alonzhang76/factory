@@ -441,6 +441,9 @@
                         sortedOrders.forEach(order => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
+                                <td class="table-cell">
+                                    <input type="checkbox" class="order-checkbox rounded text-primary focus:ring-primary" data-id="${order.orderId}">
+                                </td>
                                 <td class="table-cell">${order.orderId}</td>
                                 <td class="table-cell">${order.customer}</td>
                                 <td class="table-cell">${order.product || ''}</td>
@@ -776,6 +779,10 @@
                                 <i class="fa fa-plus"></i>
                                 新建计划
                             </button>
+                            <button class="btn btn-success" id="generate-plating-plan-btn">
+                                <i class="fa fa-file-text-o"></i>
+                                生成电镀计划
+                            </button>
                             <button class="btn btn-secondary" id="import-orders-btn">
                                 <i class="fa fa-upload"></i>
                                 导入数据
@@ -803,6 +810,9 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead>
                                     <tr>
+                                        <th class="table-header">
+                                            <input type="checkbox" id="select-all-orders" class="rounded text-primary focus:ring-primary">
+                                        </th>
                                         <th class="table-header">订单编号</th>
                                         <th class="table-header">客户名称</th>
                                         <th class="table-header">产品</th>
@@ -919,6 +929,57 @@
                     document.addEventListener('DOMContentLoaded', function() {
                         // 全选/取消全选功能
                         const selectAllCheckbox = document.getElementById('select-all');
+                        // 订单计划全选功能
+                        const selectAllOrdersCheckbox = document.getElementById('select-all-orders');
+                        if (selectAllOrdersCheckbox) {
+                            selectAllOrdersCheckbox.addEventListener('change', function() {
+                                const isChecked = this.checked;
+                                document.querySelectorAll('.order-checkbox').forEach(checkbox => {
+                                    checkbox.checked = isChecked;
+                                });
+                            });
+                        }
+                        
+                        // 生成电镀计划按钮功能
+                        const generatePlatingPlanBtn = document.getElementById('generate-plating-plan-btn');
+                        if (generatePlatingPlanBtn) {
+                            generatePlatingPlanBtn.addEventListener('click', function() {
+                                // 获取所有选中的订单复选框
+                                const checkedCheckboxes = document.querySelectorAll('.order-checkbox:checked');
+                                
+                                if (checkedCheckboxes.length === 0) {
+                                    alert('请至少选择一个订单！');
+                                    return;
+                                }
+                                
+                                // 从localStorage获取所有订单数据
+                                const allOrders = JSON.parse(localStorage.getItem(window.storagePrefix + "orders")) || [];
+                                
+                                // 收集选中的订单信息
+                                const selectedOrders = [];
+                                checkedCheckboxes.forEach(checkbox => {
+                                    const orderId = checkbox.dataset.id;
+                                    // 在所有订单中查找对应的订单信息
+                                    const order = allOrders.find(o => o.orderId === orderId);
+                                    if (order) {
+                                        selectedOrders.push({
+                                            customer: order.customer || '',
+                                            orderId: order.orderId || '',
+                                            product: order.product || '',
+                                            quantity: order.quantity || '',
+                                            deliveryDate: order.deliveryDate || '',
+                                            remark: order.remark || ''
+                                        });
+                                    }
+                                });
+                                
+                                // 将订单信息转换为JSON字符串并编码
+                                const ordersJson = encodeURIComponent(JSON.stringify(selectedOrders));
+                                
+                                // 跳转到电镀计划表页面并传递数据
+                                window.open(`电镀计划表.html?orders=${ordersJson}`, '_blank');
+                            });
+                        }
                         if (selectAllCheckbox) {
                             // 点击表头复选框时全选/取消全选所有发货记录
                             selectAllCheckbox.addEventListener('change', function() {
@@ -1228,7 +1289,7 @@
         <thead>
             <tr>
                 <th>订单编号</th>
-                <th>客户</th>
+                <th>客户名称</th>
                 <th>产品</th>
                 <th>毛坯数量</th>
                 <th>返镀数量</th>
@@ -1313,7 +1374,7 @@
                                     <tr>
                                         <th class="table-header w-12"><input type="checkbox" id="select-all" class="form-checkbox rounded"></th>
                                         <th class="table-header">订单编号</th>
-                                        <th class="table-header">客户</th>
+                                        <th class="table-header">客户名称</th>
                                         <th class="table-header">产品</th>
                                         <th class="table-header">毛坯数量</th>
                                         <th class="table-header">返镀数量</th>
@@ -1735,7 +1796,7 @@
         <thead>
             <tr>
                 <th>订单编号</th>
-                <th>客户</th>
+                <th>客户名称</th>
                 <th>产品</th>
                 <th>成品数量</th>
                 <th>返修数量</th>
@@ -1788,7 +1849,7 @@
                                 <thead>
                                     <tr>
                                         <th class="table-header sticky-top sticky-left bg-white z-20">订单编号</th>
-                                        <th class="table-header sticky-top bg-white z-10">客户</th>
+                                        <th class="table-header sticky-top bg-white z-10">客户名称</th>
                                         <th class="table-header sticky-top bg-white z-10">产品</th>
                                         <th class="table-header sticky-top bg-white z-10">成品数量</th>
                                         <th class="table-header sticky-top bg-white z-10">返修数量</th>
@@ -1905,7 +1966,7 @@
                                         </th>
                                         <th class="table-header">电镀厂</th>
                                         <th class="table-header">订单号</th>
-                                        <th class="table-header">客户</th>
+                                        <th class="table-header">客户名称</th>
                                         <th class="table-header">产品</th>
                                         <th class="table-header">订单数量</th>
                                         <th class="table-header">交货期</th>
@@ -2257,7 +2318,7 @@
                                             </th>
                                             <th class="table-header">电镀厂</th>
                                             <th class="table-header">订单号</th>
-                                            <th class="table-header">客户</th>
+                                            <th class="table-header">客户名称</th>
                                             <th class="table-header">产品</th>
                                             <th class="table-header">结算数量</th>
                                             <th class="table-header">单价</th>
@@ -4883,7 +4944,7 @@
                 // 检查是否被清空
                 if (localStorage.getItem(window.storagePrefix + "ordersCleared") === 'true' || orders.length === 0) {
                     if (orderTableBody) {
-                        orderTableBody.innerHTML = '<tr class="text-center text-gray-500"><td colspan="9">暂无订单数据</td></tr>';
+                        orderTableBody.innerHTML = '<tr class="text-center text-gray-500"><td colspan="10">暂无订单数据</td></tr>';
                     }
                     return;
                 }
@@ -4898,11 +4959,14 @@
                     orderTableBody.innerHTML = '';
                     
                     if (sortedOrders.length === 0) {
-                        orderTableBody.innerHTML = '<tr class="text-center text-gray-500"><td colspan="9">暂无订单数据</td></tr>';
+                        orderTableBody.innerHTML = '<tr class="text-center text-gray-500"><td colspan="10">暂无订单数据</td></tr>';
                     } else {
                         sortedOrders.forEach(order => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
+                                <td class="table-cell">
+                                    <input type="checkbox" class="order-checkbox rounded text-primary focus:ring-primary" data-id="${order.orderId}">
+                                </td>
                                 <td class="table-cell">${order.orderId}</td>
                                 <td class="table-cell">${order.customer}</td>
                                 <td class="table-cell">${order.product || ''}</td>
@@ -7914,7 +7978,7 @@ function importSummaryReport(file) {
                     
                     if (localStorage.getItem(window.storagePrefix + "ordersCleared") === 'true') {
                         if (orderTableBody) {
-                            orderTableBody.innerHTML = '<tr class="text-center text-gray-500"><td colspan="8">暂无订单数据</td></tr>';
+                            orderTableBody.innerHTML = '<tr class="text-center text-gray-500"><td colspan="10">暂无订单数据</td></tr>';
                         }
                         return;
                     }
@@ -7938,14 +8002,14 @@ function importSummaryReport(file) {
                     // 更新表格显示
                     if (orderTableBody) {
                         if (filteredOrders.length === 0) {
-                            orderTableBody.innerHTML = '<tr class="text-center text-gray-500"><td colspan="8">未找到匹配的订单</td></tr>';
+                            orderTableBody.innerHTML = '<tr class="text-center text-gray-500"><td colspan="10">未找到匹配的订单</td></tr>';
                         } else {
                             orderTableBody.innerHTML = '';
                             sortedFilteredOrders.forEach(order => {
                                 const row = document.createElement('tr');
                                 row.innerHTML = `
                                     <td class="table-cell">
-                                        <input type="checkbox" class="rounded text-primary focus:ring-primary">
+                                        <input type="checkbox" class="order-checkbox rounded text-primary focus:ring-primary" data-id="${order.orderId}">
                                     </td>
                                     <td class="table-cell">${order.orderId}</td>
                                     <td class="table-cell">${order.customer}</td>

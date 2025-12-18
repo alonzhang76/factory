@@ -5467,32 +5467,34 @@
     newExportBtn.addEventListener('click', function() {
       // 系统使用的localStorage键名列表
       const storageKeys = [
-                'filteredMealRecords', 
-                'mealRecords', 
-                'pieceworkData', 
-                'paymentRecords', 
-                'furnaceOrders', 
-                'employees', 
-                'savedProcessData', 
-                'customerOrders', 
-                'wageDetails', 
-                'orders',
-                // 生产计划安排文件数据
-                'orderProcesses', 
-                'productionProcesses', 
-                'processData', 
-                'productionOrderList', 
-                'productionSchedule',
-                // 备忘录数据
-                'memos',
-                // 电镀管理文件数据
-                'electroplate_management_system_orders',
-                'electroplate_management_system_ordersCleared',
-                'electroplate_management_system_bills',
-                'electroplate_management_system_payments',
-                'electroplate_management_system_deliveries',
-                'electroplate_management_system_receipts'
-      ];
+              'filteredMealRecords', 
+              'mealRecords', 
+              'pieceworkData', 
+              'paymentRecords', 
+              'furnaceOrders', 
+              'employees', 
+              'savedProcessData', 
+              'customerOrders', 
+              'wageDetails', 
+              'orders',
+              // 生产计划安排文件数据
+              'orderProcesses', 
+              'productionProcesses', 
+              'processData', 
+              'productionOrderList', 
+              'productionSchedule',
+              // 备忘录数据
+              'memos',
+              // 电镀管理文件数据
+              'electroplate_management_system_orders',
+              'electroplate_management_system_ordersCleared',
+              'electroplate_management_system_bills',
+              'electroplate_management_system_payments',
+              'electroplate_management_system_deliveries',
+              'electroplate_management_system_receipts',
+              // 电镀计划表数据
+              'platingPlanDetailTable'
+            ];
       
       // 收集所有数据
       const exportData = {
@@ -5642,7 +5644,9 @@
         'electroplate_management_system_bills',
         'electroplate_management_system_payments',
         'electroplate_management_system_deliveries',
-        'electroplate_management_system_receipts'
+        'electroplate_management_system_receipts',
+        // 电镀计划表数据
+        'platingPlanDetailTable'
       ];
       
       const autoBackupData = {
@@ -5846,7 +5850,9 @@
               'electroplate_management_system_bills',
               'electroplate_management_system_payments',
               'electroplate_management_system_deliveries',
-              'electroplate_management_system_receipts'
+              'electroplate_management_system_receipts',
+              // 电镀计划表数据
+              'platingPlanDetailTable'
             ];
               
               const manualBackupData = {
