@@ -18,77 +18,163 @@
 
     body {
       display: flex;
-      height: 100vh;
+      flex-direction: column;
+      min-height: 100vh;
       background: linear-gradient(135deg, #f7f9fc 0%, #eef2f7 100%);
       color: #333;
-      overflow: hidden;
+      overflow-x: hidden;
     }
 
-    /* 左侧菜单 */
+    /* 顶部菜单 */
     .sidebar {
-      width: 240px;
-      background: linear-gradient(to bottom, #2c3e50, #1a2530);
+      width: 100%;
+      background: linear-gradient(to right, #2c3e50, #1a2530);
       color: white;
-      padding: 20px 0;
-      box-shadow: 3px 0 10px rgba(0,0,0,0.2);
+      padding: 10px 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
       z-index: 100;
-      position: relative;
+      position: sticky;
+      top: 0;
     }
 
     .sidebar h2 {
-      text-align: center;
-      padding: 20px;
+      text-align: left;
+      padding: 10px 20px;
       font-size: 1.4em;
-  
       letter-spacing: 1px;
+      margin: 0;
+    }
+
+    .menu-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 0 20px;
+      justify-content: center;
     }
 
     .menu-item {
-      padding: 14px 24px;
+      padding: 10px 15px;
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
-      font-size: 1.02em;
+      font-size: 0.95em;
+      border-radius: 5px;
+      margin-right: 10px;
     }
 
     .menu-item i {
-      margin-right: 12px;
-      width: 20px;
+      margin-right: 8px;
+      width: 16px;
       text-align: center;
     }
 
     .menu-item:hover {
       background: rgba(255,255,255,0.1);
-      transform: translateX(4px);
+      transform: translateY(-2px);
     }
 
     .menu-item.active {
       background: #007bff;
-      border-left: 4px solid white;
-  
+      border-bottom: 3px solid white;
     }
 
-    /* 侧边栏签名样式 */
-    .sidebar-signature {
-      position: absolute;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      padding: 0 20px;
+    .menu-divider {
+      width: 100%;
+      height: 4px;
+      background-color: #ff4757;
+      margin: 10px 0;
+      border-radius: 2px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* 快速链接下拉菜单样式 */
+    .quick-links-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .quick-links-toggle {
+      background: white;
+      color: #2c3e50;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px 15px;
+      font-size: 0.95em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .quick-links-toggle:hover {
+      background-color: #f5f5f5;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .quick-links-toggle i {
+      margin-right: 8px;
+      width: 16px;
       text-align: center;
-      font-style: italic;
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 0.9em;
-      line-height: 1.5;
-      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+
+    .quick-links-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: white;
+      min-width: 180px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      border-radius: 5px;
+      z-index: 1000;
+      border: 1px solid #ddd;
+    }
+
+    .quick-link-item {
+      color: #2c3e50;
+      padding: 10px 15px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .quick-link-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .quick-link-item i {
+      margin-right: 10px;
+      width: 16px;
+      text-align: center;
+    }
+
+    .quick-links-dropdown:hover .quick-links-menu {
+      display: block;
     }
 
     /* 主内容区 */
     .main-content {
       flex: 1;
       padding: 25px;
+      padding-top: 25px;
       overflow-y: auto;
+    }
+
+    /* 页脚联系信息 */
+    .footer {
+      background: linear-gradient(to right, #2c3e50, #1a2530);
+      color: white;
+      text-align: center;
+      padding: 15px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+      font-style: italic;
+      font-size: 0.9em;
+      line-height: 1.5;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
     }
 
     .page-title {
@@ -104,16 +190,81 @@
       color: #007bff;
     }
 
-    /* 数据备份还原按钮 */
+    /* 数据备份还原下拉菜单 */
     .backup-restore-tools {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      padding: 15px;
+      position: absolute;
+      top: 25px;
+      right: 25px;
       background: white;
       border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      border-left: 4px solid #17a2b8;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    
+    .backup-dropdown-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 15px;
+      background: white;
+      color: #2c3e50;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .backup-dropdown-toggle:hover {
+      background-color: #f5f5f5;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .backup-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: white;
+      min-width: 180px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      border-radius: 5px;
+      z-index: 1000;
+      border: 1px solid #ddd;
+      padding: 0;
+      margin-top: 0;
+    }
+    
+    .backup-restore-tools:hover .backup-dropdown-menu {
+      display: block;
+    }
+    
+    .backup-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #2c3e50;
+      transition: background-color 0.3s ease;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    
+    .backup-dropdown-item:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .backup-dropdown-item.success:hover {
+      color: #28a745;
+    }
+    
+    .backup-dropdown-item.info:hover {
+      color: #17a2b8;
     }
 
     /* 统计卡片 */
@@ -235,10 +386,10 @@
     button i { font-size: 0.9em; }
 
     button.primary { background: #007bff; color: white; }
-    button.success { background: #28a745; color: white; }
+    button.success { background: none; color: #28a745; }
     button.warning { background: #ffc107; color: #212529; }
     button.danger { background: #dc3545; color: white; }
-    button.info { background: #17a2b8; color: white; }
+    button.info { background: none; color: #17a2b8; }
     button.default { background: #6c757d; color: white; }
 
     button:hover { opacity: 0.9; transform: scale(1.02); }
@@ -491,23 +642,28 @@
 </head>
 <body>
 
-  <!-- 左侧菜单 -->
+  <!-- 顶部菜单 -->
   <div class="sidebar">
     <h2><i class="fas fa-calculator"></i> 生产管理系统</h2>
-    <div class="menu-item active" data-page="employee"><i class="fas fa-users"></i> 员工管理</div>
-    <div class="menu-item" data-page="piecework"><i class="fas fa-tasks"></i> 计件工资</div>
-    <div class="menu-item" data-page="order"><i class="fas fa-truck"></i> 炉架订单</div>
-    <div class="menu-item" data-page="process"><i class="fas fa-wrench"></i> 工序管理</div>
-    <div class="menu-item" data-page="wagesummary"><i class="fas fa-chart-line"></i> 工资汇总</div>
-    <div class="menu-item" data-page="multisearch"><i class="fas fa-search"></i> 多角度查询</div>
-    <div class="menu-item" id="production-management-btn"><i class="fas fa-industry"></i> 生产管理</div>
-    <div class="menu-item" data-page="memo"><i class="fas fa-sticky-note"></i> 备忘录</div>
-    <div style="height: 4px; background-color: #ff4757; margin: 15px 10px; border-radius: 2px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);"></div>
-    <div style="padding: 8px 24px; font-size: 0.9em; color: #ff4757; font-weight: bold;">快速链接</div>
-    <div class="menu-item" onclick="window.open('电镀管理.html', '_blank')"><i class="fas fa-industry"></i> 电镀管理</div>
-    <div class="sidebar-signature">
-      <div>Designed By AlonZhang</div>
-      <div>联系：136 6511 9291</div>
+    <div class="menu-container">
+      <div class="menu-item active" data-page="employee"><i class="fas fa-users"></i> 员工管理</div>
+      <div class="menu-item" data-page="piecework"><i class="fas fa-tasks"></i> 计件工资</div>
+      <div class="menu-item" data-page="order"><i class="fas fa-truck"></i> 炉架订单</div>
+      <div class="menu-item" data-page="process"><i class="fas fa-wrench"></i> 工序管理</div>
+      <div class="menu-item" data-page="wagesummary"><i class="fas fa-chart-line"></i> 工资汇总</div>
+      <div class="menu-item" data-page="multisearch"><i class="fas fa-search"></i> 多角度查询</div>
+      <div class="menu-item" data-page="memo"><i class="fas fa-sticky-note"></i> 备忘录</div>
+      <!-- 快速链接下拉菜单 -->
+      <div class="quick-links-dropdown">
+        <button class="quick-links-toggle">
+          <i class="fas fa-link"></i> 快速链接
+          <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 5px;"></i>
+        </button>
+        <div class="quick-links-menu">
+          <div class="quick-link-item" onclick="window.open('炉架生产管理系统.html', '_blank')"><i class="fas fa-industry"></i> 生产管理</div>
+          <div class="quick-link-item" onclick="window.open('电镀管理.html', '_blank')"><i class="fas fa-industry"></i> 电镀管理</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -516,9 +672,21 @@
     
     <!-- 全局数据备份还原工具 -->
     <div class="backup-restore-tools">
-      <h3 style="margin: 0; margin-right: 20px; color: #2c3e50;">📊 数据管理</h3>
-      <button class="button success" id="export-json-btn" title="导出所有数据为JSON文件"><i class="fas fa-file-export"></i> 导出JSON</button>
-      <button class="button info" id="import-json-btn" title="从JSON文件导入并恢复数据"><i class="fas fa-file-import"></i> 导入JSON</button>
+      <button class="backup-dropdown-toggle">
+        <i class="fas fa-database"></i>
+        <span>数据管理</span>
+        <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+      </button>
+      <div class="backup-dropdown-menu">
+        <button class="backup-dropdown-item success" id="export-json-btn" title="导出所有数据为JSON文件">
+          <i class="fas fa-file-export"></i>
+          <span>备份数据</span>
+        </button>
+        <button class="backup-dropdown-item info" id="import-json-btn" title="从JSON文件导入并恢复数据">
+          <i class="fas fa-file-import"></i>
+          <span>恢复数据</span>
+        </button>
+      </div>
       <input type="file" id="json-file-input" accept=".json" style="display: none;"/>
     </div>
 
@@ -602,7 +770,29 @@
         <tbody></tbody>
       </table>
       <div class="pagination">
-        <span>共 <span id="pw-total">0</span> 条记录</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div style="display: flex; align-items: center;">
+            <span id="pieceworkRecordCount">显示 1 到 10 条，共 0 条记录</span>
+            <select id="pieceworkPerPage" style="margin-left: 20px;">
+              <option value="10">10条/页</option>
+              <option value="20">20条/页</option>
+              <option value="50">50条/页</option>
+              <option value="100">100条/页</option>
+            </select>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <button id="pieceworkFirstPage" class="button default"><i class="fas fa-angle-double-left"></i> 首页</button>
+            <button id="pieceworkPrevPage" class="button default"><i class="fas fa-angle-left"></i> 上一页</button>
+            <span style="margin: 0 10px;">第 <span id="pieceworkCurrentPage">1</span> / <span id="pieceworkTotalPages">1</span> 页</span>
+            <button id="pieceworkNextPage" class="button default">下一页 <i class="fas fa-angle-right"></i></button>
+            <button id="pieceworkLastPage" class="button default">末页 <i class="fas fa-angle-double-right"></i></button>
+            <div style="margin-left: 20px; display: flex; align-items: center;">
+              <span>跳转至</span>
+              <input type="number" id="pieceworkPageJump" style="width: 50px; margin: 0 5px;" min="1" value="1">
+              <button id="pieceworkPageJumpBtn" class="button default">确定</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -621,13 +811,15 @@
       <table id="order-table">
         <thead>
           <tr>
-            <th>订单号</th>
-            <th>客户</th>
-            <th>产品名称</th>
             <th>状态</th>
+            <th>订单日期</th>
+            <th>客户</th>
+            <th>订单号</th>
+            <th>产品名称</th>
+            <th>规格</th>
+            <th>图纸号</th>
             <th>订单数量</th>
             <th>加工单价</th>
-            <th>订单日期</th>
             <th>开始日期</th>
             <th>出货日期</th>
             <th>备注</th>
@@ -1531,6 +1723,14 @@
               </select>
             </div>
             <div class="form-group" style="flex:1; min-width:150px;">
+              <label><i class="fas fa-ruler-combined"></i> 规格</label>
+              <input type="text" class="form-control" id="order-specification" placeholder="请输入规格">
+            </div>
+            <div class="form-group" style="flex:1; min-width:150px;">
+              <label><i class="fas fa-drafting-compass"></i> 图纸号</label>
+              <input type="text" class="form-control" id="order-drawing-number" placeholder="请输入图纸号">
+            </div>
+            <div class="form-group" style="flex:1; min-width:150px;">
               <label><i class="fas fa-calculator"></i> 订单数量 <span style="color:red;">*</span></label>
               <input type="number" class="form-control" id="order-quantity" placeholder="请输入订单数量" required min="1">
             </div>
@@ -1688,12 +1888,38 @@
 
     let pieceworkData = [];
     let orderData = [];
-    // 工序列表 - 从localStorage加载真实数据，如果没有则使用空数组
+    // 工序列表 - 从localStorage加载真实数据，如果没有则使用默认数据
     let processList = [];
-    const storedProcesses = JSON.parse(localStorage.getItem('savedProcessData'));
-    if (storedProcesses && Array.isArray(storedProcesses)) {
-      processList = storedProcesses;
+    
+    // 分页相关全局变量
+    let currentPieceworkPage = 1;
+    let pieceworkPerPage = 10;
+    let totalPieceworkPages = 1;
+    
+    // 初始化工序数据
+    function initProcessData() {
+      const storedProcesses = JSON.parse(localStorage.getItem('savedProcessData'));
+      if (storedProcesses && Array.isArray(storedProcesses)) {
+        processList = storedProcesses;
+      } else {
+        // 使用默认工序数据初始化
+        processList = [
+          { id: 'PR001', name: '裁剪', pieceRate: 15.00, timeRate: 30.00, quota: 100, note: '使用剪板机裁剪原材料' },
+          { id: 'PR002', name: '折弯', pieceRate: 20.00, timeRate: 35.00, quota: 80, note: '使用折弯机进行金属弯曲' },
+          { id: 'PR003', name: '焊接', pieceRate: 25.00, timeRate: 40.00, quota: 60, note: '使用电焊机进行部件焊接' },
+          { id: 'PR004', name: '抛光', pieceRate: 12.00, timeRate: 25.00, quota: 120, note: '使用抛光机进行表面处理' },
+          { id: 'PR005', name: '组装', pieceRate: 30.00, timeRate: 45.00, quota: 50, note: '将各部件组装成成品' }
+        ];
+        localStorage.setItem('savedProcessData', JSON.stringify(processList));
+      }
     }
+    
+    // 调用初始化函数
+    initProcessData();
+    
+    // 添加调试信息
+    console.log('工序数据初始化完成，数据数量:', processList.length);
+    console.log('工序数据内容:', processList);
 
     // 初始化
     window.onload = function() {
@@ -1710,6 +1936,9 @@
       renderOrders();
       renderProcesses();
       
+      // 初始同步工序数据到炉架生产管理系统
+      syncToProductionSystem();
+      
       // 绑定工序录入表单提交事件
       document.getElementById('process-entry-form')?.addEventListener('submit', saveProcessEntry);
       
@@ -1724,6 +1953,9 @@
         document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
         document.querySelector(`[data-page="employee"]`).classList.add('active');
       }
+      
+      // 绑定分页事件
+      bindPaginationEvents();
     };
 
     // 当前编辑的员工ID（在全局作用域可用）
@@ -2044,16 +2276,20 @@
             totalAmount = quantity * rate;
             break;
           case '计件':
-            // 计件工种：(数量 - 定额数量) * 单价 * 1.4 + 90
             // 从工序数据中获取定额数量
             const processName = row.querySelector('.process-name').value.trim();
             const processes = JSON.parse(localStorage.getItem('savedProcessData') || '[]');
             const process = processes.find(p => p && p.name === processName);
             const quota = process && process.quota ? parseFloat(process.quota) : 0;
             
-            totalAmount = (quantity - quota) * rate * 1.4 + 90;
-            // 确保合计不小于0
-            totalAmount = Math.max(0, totalAmount);
+            // 根据数量与定额的关系使用不同计算公式
+            if (quantity <= quota) {
+              // 数量小于等于定额：数量 * 单价
+              totalAmount = quantity * rate;
+            } else {
+              // 数量大于定额：定额 * 单价 + (数量 - 定额) * 单价 * 1.4
+              totalAmount = quota * rate + (quantity - quota) * rate * 1.4;
+            }
             break;
           default:
             // 其他情况默认计算
@@ -2632,16 +2868,37 @@
             return;
           }
           
-          const pageId = this.getAttribute('data-page');
-          document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-          document.getElementById(pageId).classList.remove('hidden');
-          document.querySelector('.menu-item.active')?.classList.remove('active');
-          this.classList.add('active');
+          // 检查是否有onclick属性，如果有则不处理默认逻辑（让onclick属性执行）
+          if (this.hasAttribute('onclick')) {
+            return;
+          }
           
-          // 如果切换到备忘录页面，加载备忘录列表并初始化搜索功能
-          if (pageId === 'memo') {
-            loadMemos();
-            setupMemoSearch();
+          const pageId = this.getAttribute('data-page');
+          // 检查pageId是否存在，只有存在时才处理页面切换
+          if (pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            // 检查目标页面元素是否存在，防止空指针错误
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+              targetPage.classList.remove('hidden');
+            }
+            document.querySelector('.menu-item.active')?.classList.remove('active');
+            this.classList.add('active');
+            
+            // 如果切换到备忘录页面，加载备忘录列表并初始化搜索功能
+            if (pageId === 'memo') {
+              loadMemos();
+              setupMemoSearch();
+            }
+            // 如果切换到工序管理页面，重新渲染工序数据
+            else if (pageId === 'process') {
+              renderProcesses();
+            }
+            // 如果切换到计件工资页面，绑定分页事件并重新渲染数据
+            else if (pageId === 'piecework') {
+              bindPaginationEvents();
+              renderPiecework();
+            }
           }
         });
         
@@ -3429,6 +3686,8 @@
         orderNo: document.getElementById('order-number').value.trim(),
         customer: document.getElementById('order-customer').value.trim(),
         product: document.getElementById('order-product').value,
+        specification: document.getElementById('order-specification').value.trim(),
+        drawingNumber: document.getElementById('order-drawing-number').value.trim(),
         qty: parseInt(document.getElementById('order-quantity').value),
         price: 0, // 设置默认价格为0
         orderDate: document.getElementById('order-date').value,
@@ -3511,6 +3770,9 @@
         window.orderData = allOrders;
       }
       
+      // 同步订单数据到炉架生产管理系统
+      syncToProductionManagementSystem(allOrders);
+      
       // 刷新订单表格
       renderOrders();
       
@@ -3519,6 +3781,115 @@
       
       // 提示保存成功
       alert(window.currentEditOrderId ? '订单信息更新成功！' : '订单添加成功！');
+    }
+    
+    // 同步订单数据到炉架生产管理系统
+    function syncToProductionManagementSystem(allOrders) {
+      try {
+        console.log('=== 开始同步订单数据到炉架生产管理系统 ===');
+        console.log('1. 输入的订单数据:', allOrders);
+        
+        // 获取炉架生产管理系统现有的订单数据
+        const ORDER_STORAGE_KEY = 'production_order_data'; // 与炉架生产管理系统保持一致的存储键
+        console.log('2. 使用的存储键:', ORDER_STORAGE_KEY);
+        
+        const existingProductionOrders = JSON.parse(localStorage.getItem(ORDER_STORAGE_KEY)) || [];
+        console.log('3. 现有生产订单数据:', existingProductionOrders);
+        
+        // 创建一个映射，用于快速查找现有订单
+        const existingOrdersMap = new Map(existingProductionOrders.map(order => [order.orderNumber, order]));
+        console.log('4. 现有订单映射:', Array.from(existingOrdersMap.entries()));
+        
+        // 转换index.html的订单格式为炉架生产管理系统所需的格式
+        console.log('5. 开始转换订单格式...');
+        const syncedOrders = allOrders.filter(order => {
+          // 过滤掉没有订单号的订单，因为这是同步的关键标识
+          if (!order.orderNo) {
+            console.warn('   跳过没有订单号的订单:', order);
+            return false;
+          }
+          return true;
+        }).map((order, index) => {
+          console.log(`   处理订单 ${index + 1}:`, order);
+          
+          // 字段映射：
+          // index.html -> 炉架生产管理系统
+          // orderNo -> orderNumber
+          // customer -> customer
+          // product -> product
+          // orderDate -> date
+          // qty -> quantity
+          
+          // 安全地将qty转换为整数，确保不为NaN
+          const quantity = parseInt(order.qty) || 0;
+          console.log(`   订单 ${order.orderNo} 的数量转换: ${order.qty} -> ${quantity}`);
+          
+          // 如果订单已存在，保留现有数据但更新基本信息
+          if (existingOrdersMap.has(order.orderNo)) {
+            console.log(`   订单 ${order.orderNo} 已存在，合并数据`);
+            const existingOrder = existingOrdersMap.get(order.orderNo);
+            return {
+              ...existingOrder,
+              orderNumber: order.orderNo,
+              customer: order.customer || '',
+              product: order.product || '',
+              specification: order.specification || '',
+              drawingNumber: order.drawingNumber || '',
+              date: order.orderDate || '',
+              quantity: quantity,
+              // 更新pendingCount，确保与quantity一致
+              pendingCount: quantity
+            };
+          }
+          
+          // 新订单，创建完整的订单对象
+          console.log(`   订单 ${order.orderNo} 是新订单，创建完整对象`);
+          return {
+            id: `ORD${new Date().getTime()}${Math.floor(Math.random() * 1000)}`,
+            date: order.orderDate || '',
+            customer: order.customer || '',
+            orderNumber: order.orderNo,
+            product: order.product || '',
+            specification: order.specification || '',
+            drawingNumber: order.drawingNumber || '',
+            quantity: quantity,
+            processes: [], // 工序列表，初始为空
+            processCount: 0,
+            completedCount: 0,
+            pendingCount: quantity,
+            status: '待开始',
+            remarks: order.note || '',
+            isExpanded: false,
+            isEditing: false
+          };
+        });
+        
+        console.log('6. 转换后的订单数据:', syncedOrders);
+        
+        // 合并现有的非同步订单（不在index.html中的订单）
+        console.log('7. 开始合并非同步订单...');
+        const uniqueProductionOrders = [...syncedOrders];
+        existingProductionOrders.forEach(existingOrder => {
+          if (!syncedOrders.some(synced => synced.orderNumber === existingOrder.orderNumber)) {
+            console.log(`   添加非同步订单:`, existingOrder);
+            uniqueProductionOrders.push(existingOrder);
+          }
+        });
+        
+        console.log('8. 合并后的最终订单数据:', uniqueProductionOrders);
+        
+        // 保存同步后的数据到localStorage
+        localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(uniqueProductionOrders));
+        console.log('9. 保存到localStorage完成！');
+        
+        // 验证保存结果
+        const savedOrders = JSON.parse(localStorage.getItem(ORDER_STORAGE_KEY)) || [];
+        console.log('10. 验证保存结果:', savedOrders);
+        console.log('=== 订单数据同步完成 ===');
+      } catch (error) {
+        console.error('=== 同步订单数据时发生错误:', error);
+        console.error('错误堆栈:', error.stack);
+      }
     }
 
     // 显示新增员工模态框
@@ -4372,6 +4743,21 @@
           });
         }
         
+        // 计算总页数
+        totalPieceworkPages = Math.ceil(wageDetails.length / pieceworkPerPage);
+        // 确保当前页码不超过总页数
+        if (currentPieceworkPage > totalPieceworkPages) {
+          currentPieceworkPage = totalPieceworkPages || 1;
+        }
+        
+        // 计算当前页的数据范围
+        const startIndex = (currentPieceworkPage - 1) * pieceworkPerPage;
+        const endIndex = startIndex + pieceworkPerPage;
+        const currentPageData = wageDetails.slice(startIndex, endIndex);
+        
+        // 更新分页控件
+        updatePaginationControls(wageDetails.length);
+        
         // 筛选按钮事件处理
         document.getElementById('filter-pw').onclick = function() {
           const searchInput = document.getElementById('pw-search').value;
@@ -4410,7 +4796,7 @@
             </tr>
           `;
         } else {
-          tbody.innerHTML = wageDetails.map(p => `
+          tbody.innerHTML = currentPageData.map(p => `
           <tr>
             <td>${p.date || '-'}</td>
             <td>${p.employeeName || '-'}</td>
@@ -4463,7 +4849,94 @@
         
         tbody.appendChild(totalRow);
         
-        document.getElementById('pw-total').textContent = wageDetails.length;
+        // 检查元素是否存在，避免空引用错误
+        const pwTotalElement = document.getElementById('pw-total');
+        if (pwTotalElement) {
+          pwTotalElement.textContent = wageDetails.length;
+        }
+      }
+      
+      // 更新分页控件
+      function updatePaginationControls(totalItems) {
+        // 更新记录统计信息
+        const recordCountEl = document.getElementById('pieceworkRecordCount');
+        const startIndex = (currentPieceworkPage - 1) * pieceworkPerPage + 1;
+        const endIndex = Math.min(currentPieceworkPage * pieceworkPerPage, totalItems);
+        recordCountEl.textContent = `显示 ${startIndex} 到 ${endIndex} 条，共 ${totalItems} 条记录`;
+        
+        // 更新页码信息
+        const currentPageEl = document.getElementById('pieceworkCurrentPage');
+        const totalPagesEl = document.getElementById('pieceworkTotalPages');
+        const pageJumpEl = document.getElementById('pieceworkPageJump');
+        
+        currentPageEl.textContent = currentPieceworkPage;
+        totalPagesEl.textContent = totalPieceworkPages;
+        pageJumpEl.value = currentPieceworkPage;
+        
+        // 更新按钮状态
+        const firstPageBtn = document.getElementById('pieceworkFirstPage');
+        const prevPageBtn = document.getElementById('pieceworkPrevPage');
+        const nextPageBtn = document.getElementById('pieceworkNextPage');
+        const lastPageBtn = document.getElementById('pieceworkLastPage');
+        
+        firstPageBtn.disabled = currentPieceworkPage === 1;
+        prevPageBtn.disabled = currentPieceworkPage === 1;
+        nextPageBtn.disabled = currentPieceworkPage === totalPieceworkPages;
+        lastPageBtn.disabled = currentPieceworkPage === totalPieceworkPages;
+      }
+      
+      // 绑定分页按钮事件
+      function bindPaginationEvents() {
+        document.getElementById('pieceworkFirstPage').addEventListener('click', () => {
+          currentPieceworkPage = 1;
+          renderPiecework();
+        });
+        
+        document.getElementById('pieceworkPrevPage').addEventListener('click', () => {
+          if (currentPieceworkPage > 1) {
+            currentPieceworkPage--;
+            renderPiecework();
+          }
+        });
+        
+        document.getElementById('pieceworkNextPage').addEventListener('click', () => {
+          if (currentPieceworkPage < totalPieceworkPages) {
+            currentPieceworkPage++;
+            renderPiecework();
+          }
+        });
+        
+        document.getElementById('pieceworkLastPage').addEventListener('click', () => {
+          currentPieceworkPage = totalPieceworkPages;
+          renderPiecework();
+        });
+        
+        // 每页记录数选择
+        document.getElementById('pieceworkPerPage').addEventListener('change', (e) => {
+          pieceworkPerPage = parseInt(e.target.value);
+          currentPieceworkPage = 1; // 重置为第一页
+          renderPiecework();
+        });
+        
+        // 页码跳转
+        document.getElementById('pieceworkPageJumpBtn').addEventListener('click', () => {
+          const jumpPage = parseInt(document.getElementById('pieceworkPageJump').value);
+          if (jumpPage >= 1 && jumpPage <= totalPieceworkPages) {
+            currentPieceworkPage = jumpPage;
+            renderPiecework();
+          }
+        });
+        
+        // 页码输入框回车事件
+        document.getElementById('pieceworkPageJump').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            const jumpPage = parseInt(document.getElementById('pieceworkPageJump').value);
+            if (jumpPage >= 1 && jumpPage <= totalPieceworkPages) {
+              currentPieceworkPage = jumpPage;
+              renderPiecework();
+            }
+          }
+        });
       }
 
       // 搜索输入框事件处理
@@ -4651,13 +5124,15 @@
       const tbody = document.querySelector('#order-table tbody');
       tbody.innerHTML = filteredOrders.map(o => `
         <tr>
-          <td>${o.orderNo || ''}</td>
-          <td>${o.customer || ''}</td>
-          <td>${o.product || ''}</td>
           <td style="${getOrderStatusStyle(o.status || '待生产')}">${o.status || '待生产'}</td>
+          <td>${o.orderDate || ''}</td>
+          <td>${o.customer || ''}</td>
+          <td>${o.orderNo || ''}</td>
+          <td>${o.product || ''}</td>
+          <td>${o.specification || ''}</td>
+          <td>${o.drawingNumber || ''}</td>
           <td>${o.qty || 0}</td>
           <td>¥${(o.price || 0).toFixed(2)}</td>
-          <td>${o.orderDate || ''}</td>
           <td>${o.startDate || '-'}</td>
           <td>${o.deliveryDate || ''}</td>
           <td>${o.note || ''}</td>
@@ -4674,37 +5149,53 @@
         totalRow.style.backgroundColor = '#f5f5f5';
         totalRow.style.fontWeight = 'bold';
         
-        // 创建空单元格和合计单元格
-        for (let i = 0; i < 4; i++) {
+        // 第1个单元格：显示"合计"文本，与第一列对齐
+        const totalTextTd = document.createElement('td');
+        totalTextTd.textContent = '合计';
+        totalTextTd.style.textAlign = 'left'; // 与第一列对齐
+        totalRow.appendChild(totalTextTd);
+        
+        // 第2-7个单元格：空单元格（对应新顺序中的订单日期、客户、订单号、产品名称、规格、图纸号）
+        for (let i = 0; i < 6; i++) {
           const td = document.createElement('td');
-          if (i === 0) {
-            td.textContent = '合计';
-            td.colSpan = 4;
-            td.style.textAlign = 'right';
-            td.style.paddingRight = '10px';
-            i = 3; // 跳过后面3个单元格
-          }
           totalRow.appendChild(td);
         }
         
-        // 订单数量合计单元格
+        // 第8个单元格：订单数量合计（对应"订单数量"列）
         const qtyTd = document.createElement('td');
         qtyTd.textContent = totalQuantity;
         qtyTd.style.textAlign = 'left';
         totalRow.appendChild(qtyTd);
         
-        // 剩余空单元格
-        for (let i = 0; i < 6; i++) {
+        // 剩余空单元格（对应新顺序中的加工单价、开始日期、出货日期、备注、操作）
+        for (let i = 0; i < 4; i++) {
           const td = document.createElement('td');
           totalRow.appendChild(td);
         }
         
         tbody.appendChild(totalRow);
       }
+      
+      // 每次渲染订单表格时同步数据到炉架生产管理系统
+      syncToProductionManagementSystem(allOrders);
     }
 
     function renderProcesses(searchTerm = '') {
-      const tbody = document.querySelector('#process-table tbody');
+      // 添加调试信息
+      console.log('调用renderProcesses函数，搜索词:', searchTerm);
+      console.log('当前processList数据:', processList);
+      
+      // 获取表格元素
+      const table = document.getElementById('process-table');
+      const tbody = table ? table.querySelector('tbody') : null;
+      
+      console.log('找到的表格元素:', table);
+      console.log('找到的tbody元素:', tbody);
+      
+      if (!tbody) {
+        console.error('未找到process-table的tbody元素');
+        return;
+      }
       
       // 根据搜索词过滤工序数据
       let filteredProcesses = processList;
@@ -4720,6 +5211,14 @@
             (p.note && p.note.toLowerCase().includes(searchTerm))
           );
         });
+      }
+      
+      console.log('过滤后的工序数据:', filteredProcesses);
+      
+      // 如果没有数据，显示提示信息
+      if (filteredProcesses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">暂无工序数据</td></tr>';
+        return;
       }
       
       tbody.innerHTML = filteredProcesses.map(p => `
@@ -4740,6 +5239,8 @@
           </td>
         </tr>
       `).join('');
+      
+      console.log('工序数据渲染完成');
     }
 
     // 关闭模态框
@@ -4804,6 +5305,8 @@
         if (productSelect) {
           productSelect.value = order.product || '';
         }
+        document.getElementById('order-specification').value = order.specification || '';
+        document.getElementById('order-drawing-number').value = order.drawingNumber || '';
         document.getElementById('order-quantity').value = order.qty || '';
         document.getElementById('order-date').value = order.orderDate || '';
         document.getElementById('delivery-date').value = order.deliveryDate || '';
@@ -4828,6 +5331,9 @@
         
         // 保存到localStorage
         localStorage.setItem('orders', JSON.stringify(allOrders));
+        
+        // 同步删除操作到炉架生产管理系统
+        syncToProductionManagementSystem(allOrders);
         
         // 刷新订单表格
         renderOrders();
@@ -5025,6 +5531,9 @@
             // 保存到localStorage
             localStorage.setItem('savedProcessData', JSON.stringify(processList));
             
+            // 同步到炉架生产管理系统
+            syncToProductionSystem();
+            
             // 刷新表格
             renderProcesses();
             
@@ -5211,11 +5720,31 @@
       // 保存到localStorage
       localStorage.setItem('savedProcessData', JSON.stringify(processList));
       
+      // 同步到炉架生产管理系统
+      syncToProductionSystem();
+      
       // 刷新表格
       renderProcesses();
       
       // 关闭模态框
       closeModal('add-process-modal');
+    }
+    
+    // 将工序数据同步到炉架生产管理系统
+    function syncToProductionSystem() {
+      // 获取最新工序数据
+      const processes = JSON.parse(localStorage.getItem('savedProcessData') || '[]');
+      
+      // 转换数据格式
+      const productionProcesses = processes.map(p => ({
+        id: p.id,
+        name: p.name,
+        description: p.note || ''
+      }));
+      
+      // 清空旧记录并保存新数据
+      localStorage.setItem('production_process_data', JSON.stringify(productionProcesses));
+      console.log('工序数据已同步到炉架生产管理系统');
     }
     
     // 编辑工序
@@ -5255,6 +5784,9 @@
         // 保存到localStorage
         localStorage.setItem('savedProcessData', JSON.stringify(processList));
         
+        // 同步到炉架生产管理系统
+        syncToProductionSystem();
+        
         // 刷新表格
         renderProcesses();
         
@@ -5269,6 +5801,10 @@
         processList = [];
         // 更新localStorage
         localStorage.setItem('savedProcessData', JSON.stringify(processList));
+        
+        // 同步到炉架生产管理系统
+        syncToProductionSystem();
+        
         // 重新渲染表格
         renderProcesses();
         // 显示成功提示
@@ -5493,7 +6029,16 @@
               'electroplate_management_system_deliveries',
               'electroplate_management_system_receipts',
               // 电镀计划表数据
-              'platingPlanDetailTable'
+              'platingPlanDetailTable',
+              // 炉架生产管理系统数据
+              'production_equipment_data',
+              'production_process_data',
+              'factory_management_system_maintenance_records',
+              'factory_management_system_personnel_data_20240615',
+              'production_order_data',
+              'workOrderData',
+              'orderData',
+              'selectedWorkOrdersForDispatch'
             ];
       
       // 收集所有数据
@@ -5906,6 +6451,45 @@
           console.error('检查自动备份时出错:', error);
         }
       });
+  </script>
+  <!-- 页脚联系信息 -->
+  <div class="footer">
+    <div id="designer-text">Designed By AlonZhang</div>
+    <div>联系：136 6511 9291</div>
+  </div>
+
+  <script>
+    // 默认隐藏工序管理表格中的编辑和删除按钮
+    function hideProcessButtons() {
+      const editButtons = document.querySelectorAll('#process-table .button.default.btn-icon');
+      const deleteButtons = document.querySelectorAll('#process-table .button.danger.btn-icon');
+      editButtons.forEach(btn => btn.style.display = 'none');
+      deleteButtons.forEach(btn => btn.style.display = 'none');
+    }
+
+    // 显示工序管理表格中的编辑和删除按钮
+    function showProcessButtons() {
+      const editButtons = document.querySelectorAll('#process-table .button.default.btn-icon');
+      const deleteButtons = document.querySelectorAll('#process-table .button.danger.btn-icon');
+      editButtons.forEach(btn => btn.style.display = 'inline-block');
+      deleteButtons.forEach(btn => btn.style.display = 'inline-block');
+    }
+
+    // 为"Designed By AlonZhang"文本添加双击事件监听器
+    const designerText = document.getElementById('designer-text');
+    if (designerText) {
+      designerText.addEventListener('dblclick', showProcessButtons);
+    }
+
+    // 页面加载完成后隐藏按钮
+    document.addEventListener('DOMContentLoaded', hideProcessButtons);
+
+    // 重写renderProcesses函数，在渲染后隐藏按钮
+    const originalRenderProcesses = renderProcesses;
+    renderProcesses = function(searchTerm = '') {
+      originalRenderProcesses(searchTerm);
+      hideProcessButtons();
+    };
   </script>
   </body>
 </html>
