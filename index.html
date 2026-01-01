@@ -192,12 +192,9 @@
 
     /* 数据备份还原下拉菜单 */
     .backup-restore-tools {
-      position: absolute;
-      top: 25px;
-      right: 25px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      margin-right: 10px;
       z-index: 1000;
     }
     
@@ -206,19 +203,19 @@
       align-items: center;
       gap: 8px;
       padding: 10px 15px;
-      background: white;
-      color: #2c3e50;
-      border: 1px solid #ddd;
+      background: transparent;
+      color: white;
+      border: none;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 0.95em;
       font-weight: 500;
       transition: all 0.3s ease;
     }
     
     .backup-dropdown-toggle:hover {
-      background-color: #f5f5f5;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
     }
     
     .backup-dropdown-menu {
@@ -234,6 +231,11 @@
       border: 1px solid #ddd;
       padding: 0;
       margin-top: 0;
+      right: 10px;
+    }
+    
+    .backup-restore-tools {
+      position: relative;
     }
     
     .backup-restore-tools:hover .backup-dropdown-menu {
@@ -664,31 +666,32 @@
           <div class="quick-link-item" onclick="window.open('电镀管理.html', '_blank')"><i class="fas fa-industry"></i> 电镀管理</div>
         </div>
       </div>
+      
+      <!-- 数据管理下拉菜单 -->
+      <div class="backup-restore-tools">
+        <button class="backup-dropdown-toggle">
+          <i class="fas fa-database"></i>
+          <span>数据管理</span>
+          <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+        </button>
+        <div class="backup-dropdown-menu">
+          <button class="backup-dropdown-item success" id="export-json-btn" title="导出所有数据为JSON文件">
+            <i class="fas fa-file-export"></i>
+            <span>备份数据</span>
+          </button>
+          <button class="backup-dropdown-item info" id="import-json-btn" title="从JSON文件导入并恢复数据">
+            <i class="fas fa-file-import"></i>
+            <span>恢复数据</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- 主内容区 -->
   <div class="main-content">
     
-    <!-- 全局数据备份还原工具 -->
-    <div class="backup-restore-tools">
-      <button class="backup-dropdown-toggle">
-        <i class="fas fa-database"></i>
-        <span>数据管理</span>
-        <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
-      </button>
-      <div class="backup-dropdown-menu">
-        <button class="backup-dropdown-item success" id="export-json-btn" title="导出所有数据为JSON文件">
-          <i class="fas fa-file-export"></i>
-          <span>备份数据</span>
-        </button>
-        <button class="backup-dropdown-item info" id="import-json-btn" title="从JSON文件导入并恢复数据">
-          <i class="fas fa-file-import"></i>
-          <span>恢复数据</span>
-        </button>
-      </div>
-      <input type="file" id="json-file-input" accept=".json" style="display: none;"/>
-    </div>
+    <input type="file" id="json-file-input" accept=".json" style="display: none;"/>
 
     <!-- ========== 员工管理 ========== -->
     <div id="employee" class="page">
@@ -902,6 +905,7 @@
           <option>12月</option>
         </select>
         <button class="button primary" id="query-wage" onclick="filterWageTable()"><i class="fas fa-search"></i> 查询</button>
+        <button class="button secondary" id="export-wage" onclick="exportWageToExcel()"><i class="fas fa-download"></i> 导出</button>
       </div>
       <script>
       // 筛选工资表格数据
@@ -1068,6 +1072,69 @@
             totalWage: totalWage
           };
         });
+      }
+      
+      // 导出工资数据到Excel
+      function exportWageToExcel() {
+        // 获取工资汇总表格
+        const table = document.getElementById('wage-detail-table');
+        const rows = table.querySelectorAll('tbody tr');
+        
+        // 检查表格是否有数据
+        if (rows.length === 0 || (rows.length === 1 && rows[0].querySelector('td[colspan]'))) {
+          alert('当前没有可导出的数据');
+          return;
+        }
+        
+        // 准备Excel数据
+        const excelData = [];
+        
+        // 添加表头（按指定顺序：姓名，出勤天数，生产工资，考勤奖，房贴，其它补贴）
+        excelData.push(['姓名', '出勤天数', '生产工资', '考勤奖', '房贴', '其它补贴']);
+        
+        // 添加数据行
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          if (cells.length >= 7) {
+            // 按指定顺序提取数据
+            const name = cells[0].textContent.trim();
+            const attendance = parseInt(cells[1].textContent.trim());
+            // 生产工资在第6列，需要提取数字部分并四舍五入取整数
+            const productionWage = Math.round(parseFloat(cells[5].textContent.replace(/[^0-9.-]/g, '')) || 0);
+            // 考勤奖在第2列，需要提取数字部分并四舍五入取整数
+            const attendanceBonus = Math.round(parseFloat(cells[2].textContent.replace(/[^0-9.-]/g, '')) || 0);
+            // 房贴在第3列，需要提取数字部分并四舍五入取整数
+            const housingAllowance = Math.round(parseFloat(cells[3].textContent.replace(/[^0-9.-]/g, '')) || 0);
+            // 其它补贴在第4列，需要提取数字部分并四舍五入取整数
+            const otherAllowance = Math.round(parseFloat(cells[4].textContent.replace(/[^0-9.-]/g, '')) || 0);
+            
+            // 添加一行数据
+            excelData.push([name, attendance, productionWage, attendanceBonus, housingAllowance, otherAllowance]);
+          }
+        });
+        
+        // 创建工作簿和工作表
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(excelData);
+        
+        // 设置数字格式为整数
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let R = range.s.r + 1; R <= range.e.r; ++R) { // 从第二行开始（跳过表头）
+          for (let C = range.s.c + 1; C <= range.e.c; ++C) { // 从第二列开始（跳过姓名）
+            const cell_address = XLSX.utils.encode_cell({c: C, r: R});
+            if (!ws[cell_address]) continue;
+            ws[cell_address].t = 'n'; // 设置为数字类型
+          }
+        }
+        
+        // 添加工作表到工作簿
+        XLSX.utils.book_append_sheet(wb, ws, '工资汇总');
+        
+        // 生成Excel文件并下载
+        const selectedYear = document.getElementById('year-select').value;
+        const selectedMonth = document.getElementById('month-select').value;
+        const fileName = `工资汇总_${selectedYear}_${selectedMonth}.xlsx`;
+        XLSX.writeFile(wb, fileName);
       }
       
       // 计算并显示表格各列的合计
@@ -6259,198 +6326,10 @@
     });
     */
     
-    // 页面加载时添加备份提示信息
+    // 页面加载时初始化
     window.addEventListener('load', function() {
-      // 显示自动备份功能提示
-      setTimeout(() => {
-        try {
-          const backupTools = document.querySelector('.backup-restore-tools');
-          if (backupTools) {
-            // 添加提示元素
-            const backupHint = document.createElement('div');
-            backupHint.id = 'backup-system-hint';
-            backupHint.style.fontSize = '0.85em';
-            backupHint.style.color = '#888';
-            backupHint.style.marginTop = '5px';
-            backupHint.style.padding = '8px';
-            backupHint.style.background = '#f5f5f5';
-            backupHint.style.borderRadius = '4px';
-            backupHint.style.textAlign = 'center';
-            backupHint.textContent = '系统已关闭页面关闭时的自动备份功能';
-            
-            // 插入到备份工具容器中
-            backupTools.appendChild(backupHint);
-            
-            // 3秒后淡出提示
-            setTimeout(() => {
-              backupHint.style.transition = 'opacity 0.5s';
-              backupHint.style.opacity = '0';
-              setTimeout(() => {
-                backupHint.remove();
-              }, 500);
-            }, 3000);
-          }
-        } catch (e) {
-          console.log('无法显示备份提示信息');
-        }
-      }, 1000);
-      
-      // 检查是否有自动备份，并提供恢复选项
-      try {
-        const autoBackup = localStorage.getItem('autoBackupData');
-        if (autoBackup) {
-          const backupInfo = JSON.parse(autoBackup);
-          const lastBackupTime = backupInfo.backupDate;
-          
-          // 在备份还原工具区域添加自动备份信息
-          const backupTools = document.querySelector('.backup-restore-tools');
-          if (backupTools) {
-            // 检查是否已存在自动备份信息元素
-            let autoBackupInfo = document.getElementById('auto-backup-info');
-            if (!autoBackupInfo) {
-              autoBackupInfo = document.createElement('div');
-              autoBackupInfo.id = 'auto-backup-info';
-              autoBackupInfo.style.marginLeft = 'auto';
-              autoBackupInfo.style.display = 'flex';
-              autoBackupInfo.style.alignItems = 'center';
-              autoBackupInfo.style.gap = '10px';
-              autoBackupInfo.style.fontSize = '0.9em';
-              backupTools.appendChild(autoBackupInfo);
-            }
-            
-            // 更新自动备份信息
-            autoBackupInfo.innerHTML = `
-              <span style="color: #666;">最近自动备份: ${lastBackupTime}</span>
-              <button class="button small" id="download-auto-backup" style="padding: 4px 12px;">下载自动备份</button>
-              <button class="button small warning" id="restore-auto-backup" style="padding: 4px 12px;">恢复自动备份</button>
-              <button class="button small primary" id="force-auto-backup" style="padding: 4px 12px;">立即创建并下载备份</button>
-            `;
-            
-            // 下载自动备份按钮事件
-            document.getElementById('download-auto-backup').addEventListener('click', function() {
-              const jsonContent = JSON.stringify(JSON.parse(autoBackup), null, 2);
-              const blob = new Blob([jsonContent], { type: 'application/json' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `生产管理系统自动备份_${lastBackupTime.replace(/:/g, '-')}.json`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-              alert('自动备份文件已下载！');
-            });
-            
-            // 恢复自动备份按钮事件
-            document.getElementById('restore-auto-backup').addEventListener('click', function() {
-              if (confirm('确定要恢复最近的自动备份数据吗？这将覆盖当前所有数据！')) {
-                try {
-                  const importData = JSON.parse(autoBackup);
-                  let restoreCount = 0;
-                  
-                  Object.keys(importData.data).forEach(key => {
-                    try {
-                      if (importData.data[key] !== null && importData.data[key] !== undefined) {
-                        localStorage.setItem(key, JSON.stringify(importData.data[key]));
-                        restoreCount++;
-                      }
-                    } catch (error) {
-                      console.error(`恢复键 ${key} 时出错:`, error);
-                    }
-                  });
-                  
-                  alert(`自动备份恢复成功！已恢复 ${restoreCount} 个数据模块。`);
-                  location.reload();
-                } catch (error) {
-                  alert('恢复失败：' + error.message);
-                }
-              }
-            });
-            
-            // 立即创建并下载备份按钮事件
-            document.getElementById('force-auto-backup').addEventListener('click', function() {
-              // 收集所有数据进行备份
-            const storageKeys = [
-              'filteredMealRecords', 
-              'mealRecords', 
-              'pieceworkData', 
-              'paymentRecords', 
-              'furnaceOrders', 
-              'employees', 
-              'savedProcessData', 
-              'customerOrders', 
-              'wageDetails', 
-              'orders',
-              // 生产计划安排文件数据
-              'orderProcesses', 
-              'productionProcesses', 
-              'processData', 
-              'productionOrderList', 
-              'productionSchedule',
-              // 备忘录数据
-              'memos',
-              // 电镀管理文件数据
-              'electroplate_management_system_orders',
-              'electroplate_management_system_ordersCleared',
-              'electroplate_management_system_bills',
-              'electroplate_management_system_payments',
-              'electroplate_management_system_deliveries',
-              'electroplate_management_system_receipts',
-              // 电镀计划表数据
-              'platingPlanDetailTable'
-            ];
-              
-              const manualBackupData = {
-                backupDate: new Date().toLocaleString('zh-CN'),
-                version: '1.0',
-                data: {},
-                manualBackup: true
-              };
-              
-              // 从localStorage获取所有数据
-              storageKeys.forEach(key => {
-                try {
-                  const value = localStorage.getItem(key);
-                  if (value !== null) {
-                    manualBackupData.data[key] = JSON.parse(value);
-                  }
-                } catch (error) {
-                  console.error(`手动备份键 ${key} 时出错:`, error);
-                }
-              });
-              
-              try {
-                // 保存到localStorage
-                localStorage.setItem('autoBackupData', JSON.stringify(manualBackupData));
-                
-                // 创建备份JSON文件并触发下载
-                const jsonContent = JSON.stringify(manualBackupData, null, 2);
-                const blob = new Blob([jsonContent], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `生产管理系统手动备份_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}_${new Date().toLocaleTimeString('zh-CN').replace(/:/g, '-')}.json`;
-                document.body.appendChild(a);
-                a.click();
-                
-                // 清理
-                setTimeout(() => {
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                }, 100);
-                
-                alert('备份成功！备份文件已下载到您的电脑。');
-              } catch (error) {
-                alert('备份失败：' + error.message);
-                console.error('手动备份失败:', error);
-              }
-            });
-            }
-          }
-        } catch (error) {
-          console.error('检查自动备份时出错:', error);
-        }
-      });
+      // 仅保留手动备份功能，自动备份已移除
+    });
   </script>
   <!-- 页脚联系信息 -->
   <div class="footer">
