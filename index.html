@@ -560,6 +560,11 @@
       color: #000;
     }
 
+    #password-input:focus {
+      border-color: #007bff !important;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+    }
+
     .form-group {
       margin-bottom: 16px;
     }
@@ -1490,6 +1495,28 @@
         <tbody></tbody>
         <!-- 合计行将通过JavaScript动态添加 -->
       </table>
+    </div>
+
+    <!-- ========== 密码验证模态框 ========== -->
+    <div id="password-modal" class="modal">
+      <div class="modal-content" style="width: 400px; max-width: 90vw; border-radius: 8px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); border: 1px solid rgba(0, 0, 0, 0.1); background-color: #fff; transform-origin: center; transition: transform 0.3s ease, opacity 0.3s ease;">
+        <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid #e9ecef; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border-radius: 8px 8px 0 0;">
+          <h3><i class="fas fa-lock"></i> 请输入密码</h3>
+          <button class="close-btn" onclick="closeModal('password-modal')" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 30px 20px; background-color: #fafbfc;">
+          <p style="text-align: center; color: #666; margin-bottom: 20px;">请输入密码以继续操作</p>
+          <div style="display: flex; justify-content: center; align-items: center;">
+            <i class="fas fa-key" style="font-size: 1.2em; color: #007bff; margin-right: 10px;"></i>
+            <input type="password" id="password-input" placeholder="请输入密码" style="padding: 12px 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; width: 200px; transition: border-color 0.3s; outline: none;">
+          </div>
+          <p id="password-error" style="color: #dc3545; text-align: center; margin-top: 15px; display: none; font-size: 14px;"><i class="fas fa-exclamation-circle"></i> 密码错误，请重试</p>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: center; padding: 15px 20px; border-top: 1px solid #e9ecef; background-color: #f8f9fa; border-radius: 0 0 8px 8px; gap: 15px;">
+          <button type="button" class="button default" onclick="closeModal('password-modal')" style="padding: 10px 30px; cursor: pointer; border: none; background-color: #6c757d; color: white; border-radius: 6px; font-size: 14px; font-weight: 500; transition: all 0.3s ease;">取消</button>
+          <button type="button" class="button primary" id="password-confirm-btn" style="padding: 10px 30px; cursor: pointer; border: none; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border-radius: 6px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);">确认</button>
+        </div>
+      </div>
     </div>
 
     <!-- ========== 新增工序模态框 ========== -->
@@ -3420,15 +3447,69 @@
       });
 
       // 其他按钮占位提示
-      document.querySelectorAll('[id$="-btn"]:not(#import-emp-btn):not(#add-employee-btn):not(#export-json-btn):not(#import-json-btn):not(#multisearch-query-btn):not(#add-memo-btn)').forEach(btn => {
-        // 只对未实现的按钮添加功能开发中的提示
-      if (btn.id !== 'add-order-btn' && btn.id !== 'employee-export-btn' && btn.id !== 'employee-import-btn' && btn.id !== 'import-btn' && btn.id !== 'export-btn' && btn.id !== 'export-csv-btn' && btn.id !== 'import-proc' && btn.id !== 'export-proc' && btn.id !== 'add-proc-btn' && btn.id !== 'add-process-btn' && btn.id !== 'production-management-btn' && btn.id !== 'clear-emp-btn') {
-        btn.addEventListener('click', () => alert(`功能开发中：${btn.textContent}`));
-      }
+      document.querySelectorAll('[id$="-btn"]:not(#import-emp-btn):not(#add-employee-btn):not(#export-json-btn):not(#import-json-btn):not(#multisearch-query-btn):not(#add-memo-btn):not(#password-confirm-btn)').forEach(btn => {
+        if (btn.id !== 'add-order-btn' && btn.id !== 'employee-export-btn' && btn.id !== 'employee-import-btn' && btn.id !== 'import-btn' && btn.id !== 'export-btn' && btn.id !== 'export-csv-btn' && btn.id !== 'import-proc' && btn.id !== 'export-proc' && btn.id !== 'add-proc-btn' && btn.id !== 'add-process-btn' && btn.id !== 'production-management-btn' && btn.id !== 'clear-emp-btn') {
+          btn.addEventListener('click', () => alert(`功能开发中：${btn.textContent}`));
+        }
       });
       
+      // 密码验证相关功能
+      function showPasswordModal() {
+        const modal = document.getElementById('password-modal');
+        const passwordInput = document.getElementById('password-input');
+        const errorMsg = document.getElementById('password-error');
+        const confirmBtn = document.getElementById('password-confirm-btn');
+        
+        if (modal && passwordInput) {
+          passwordInput.value = '';
+          if (errorMsg) {
+            errorMsg.style.display = 'none';
+          }
+          modal.setAttribute('style', 'display: flex !important; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000;');
+          
+          // 延迟聚焦到输入框，确保模态框完全显示
+          setTimeout(() => {
+            passwordInput.focus();
+          }, 100);
+          
+          // 绑定确认按钮点击事件
+          if (confirmBtn) {
+            confirmBtn.onclick = function() {
+              const correctPassword = 'alon2601';
+              const enteredPassword = passwordInput.value;
+              
+              if (enteredPassword === correctPassword) {
+                closeModal('password-modal');
+                setTimeout(() => {
+                  importProcesses();
+                }, 300);
+              } else {
+                errorMsg.style.display = 'block';
+                passwordInput.value = '';
+                setTimeout(() => {
+                  passwordInput.focus();
+                }, 50);
+              }
+            };
+          }
+          
+          // 绑定Enter键事件
+          passwordInput.onkeypress = function(e) {
+            if (e.key === 'Enter') {
+              confirmBtn.click();
+            }
+          };
+        }
+      }
+      
       // 工序管理 - 导入导出功能绑定
-      document.getElementById('import-proc').addEventListener('click', importProcesses);
+      const importProcBtn = document.getElementById('import-proc');
+      if (importProcBtn) {
+        // 移除所有之前的事件监听器，确保不会重复触发
+        importProcBtn.replaceWith(importProcBtn.cloneNode(true));
+        const newImportProcBtn = document.getElementById('import-proc');
+        newImportProcBtn.addEventListener('click', showPasswordModal);
+      }
       document.getElementById('export-proc').addEventListener('click', exportProcesses);
       // 绑定清空按钮事件
       document.getElementById('clear-proc').addEventListener('click', clearProcessData);
@@ -5288,9 +5369,11 @@
         return;
       }
       
-      tbody.innerHTML = filteredProcesses.map(p => `
+      tbody.innerHTML = filteredProcesses.map(p => {
+        const isRedId = p.id >= 'RPOC063';
+        return `
         <tr>
-          <td>${p.id}</td>
+          <td style="${isRedId ? 'color: #dc3545; font-weight: 500;' : ''}">${p.id}</td>
           <td>${p.name}</td>
           <td>¥${p.pieceRate.toFixed(2)}</td>
           <td>${p.timeRate !== null ? `¥${p.timeRate.toFixed(2)}/h` : '-'}</td>
@@ -5305,7 +5388,8 @@
             </button>
           </td>
         </tr>
-      `).join('');
+      `;
+      }).join('');
       
       console.log('工序数据渲染完成');
     }
