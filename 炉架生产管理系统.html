@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>炉架生产管理系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <style>
         /* 隐藏数字输入框的微调按钮 */
         input[type="number"]::-webkit-inner-spin-button,
@@ -1910,9 +1909,24 @@
             function getCurrentSchedulingDate() {
                 const startDateInput = document.getElementById('schedulingStartDate');
                 const endDateInput = document.getElementById('schedulingEndDate');
+                
+                // 解析开始日期，确保使用本地时间而非UTC时间，并设置为当天0点
+                const startParts = startDateInput.value.split('-');
+                const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]));
+                startDate.setHours(0, 0, 0, 0);
+                
+                // 解析结束日期，确保使用本地时间而非UTC时间，并设置为当天23:59:59
+                const endParts = endDateInput.value.split('-');
+                const endDate = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]));
+                endDate.setHours(23, 59, 59, 999);
+                
+                // 调试：输出解析后的开始和结束日期
+                console.log('解析后的开始日期:', startDate.toISOString());
+                console.log('解析后的结束日期:', endDate.toISOString());
+                
                 return {
-                    startDate: new Date(startDateInput.value),
-                    endDate: new Date(endDateInput.value)
+                    startDate: startDate,
+                    endDate: endDate
                 };
             }
             
@@ -1932,8 +1946,15 @@
                     headerRow.removeChild(headerRow.cells[4]);
                 }
                 
-                // 生成日期列
+                // 生成日期列 - 确保从startDate开始，包括startDate当天
                 const currentDate = new Date(startDate);
+                // 设置为当天的0点，确保日期比较准确
+                currentDate.setHours(0, 0, 0, 0);
+                
+                // 调试：输出开始和结束日期
+                console.log('生成日期列，开始日期:', currentDate.toISOString(), '结束日期:', endDate.toISOString());
+                
+                let counter = 0;
                 while (currentDate <= endDate) {
                     const month = currentDate.getMonth() + 1;
                     const day = currentDate.getDate();
@@ -1942,9 +1963,17 @@
                     th.className = 'text-center py-3 px-4 font-medium text-gray-500 whitespace-nowrap';
                     th.innerHTML = `${month}/${day}<br>${dayOfWeek}`;
                     headerRow.appendChild(th);
+                    
+                    // 调试：输出生成的日期
+                    console.log(`生成日期列 ${counter + 1}: ${month}/${day}`);
+                    
                     // 增加一天
                     currentDate.setDate(currentDate.getDate() + 1);
+                    counter++;
                 }
+                
+                // 调试：输出生成的日期列总数
+                console.log('总共生成的日期列数:', counter);
             }
             
             // 渲染人员排班表
@@ -2001,8 +2030,16 @@
                     orderWorkOrdersMap.get(key).workOrders.push(workOrder);
                 });
                 
-                // 计算日期范围内的天数
-                const daysInRange = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                // 计算日期范围内的天数 - 确保包含开始和结束日期
+                const start = new Date(startDate);
+                start.setHours(0, 0, 0, 0);
+                const end = new Date(endDate);
+                end.setHours(0, 0, 0, 0);
+                const daysInRange = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+                
+                // 调试：输出日期范围和天数
+                console.log('日期范围:', start.toISOString(), '到', end.toISOString());
+                console.log('计算的日期范围内天数:', daysInRange);
                 
                 // 将Map转换为数组并按订单号排序
                 const sortedOrderInfoArray = Array.from(orderWorkOrdersMap.values())
@@ -2050,7 +2087,8 @@
                         <td class="${processCellClass}">${orderInfo.process}</td>
                     `;
                     
-                    // 添加日期列单元格
+                    // 添加日期列单元格 - 确保生成的列数与表头一致
+                    console.log(`为订单 ${orderInfo.orderNumber} 生成 ${daysInRange} 个日期列`);
                     for (let day = 0; day < daysInRange; day++) {
                         cellsHTML += `<td></td>`;
                     }
@@ -2071,8 +2109,8 @@
                         if (workOrderDate >= startDate && workOrderDate <= endDate) {
                             // 计算该日期在日期范围内的索引
                             const diffTime = workOrderDate - startDate;
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                            const columnIndex = diffDays + 3; // 客户(0), 订单号(1), 数量(2), 工序名称(3), 日期列从索引4开始（day=1对应索引4）
+                            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                            const columnIndex = diffDays + 4; // 客户(0), 订单号(1), 数量(2), 工序名称(3), 日期列从索引4开始（day=0对应索引4）
                             if (columnIndex < row.cells.length) {
                                 const cell = row.cells[columnIndex];
                                 
@@ -2115,6 +2153,40 @@
                 });
             }
             
+            // 设置默认日期范围函数
+            function setDefaultSchedulingDate() {
+                const startDateInput = document.getElementById('schedulingStartDate');
+                const endDateInput = document.getElementById('schedulingEndDate');
+                
+                if (!startDateInput || !endDateInput) return;
+                
+                // 获取当前日期
+                const today = new Date();
+                
+                // 设置开始日期为今天
+                const startDate = new Date(today);
+                
+                // 设置结束日期为今天往后一个月
+                const endDate = new Date(today);
+                endDate.setMonth(endDate.getMonth() + 1);
+                
+                // 格式化日期为YYYY-MM-DD格式
+                const formatDate = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                };
+                
+                // 设置输入框的值
+                startDateInput.value = formatDate(startDate);
+                endDateInput.value = formatDate(endDate);
+                
+                // 调试：输出默认日期
+                console.log('设置默认开始日期:', startDateInput.value);
+                console.log('设置默认结束日期:', endDateInput.value);
+            }
+            
             // 只在切换到人员排班页面时才初始化
             // 添加页面切换事件监听
             navLinks.forEach(link => {
@@ -2123,6 +2195,9 @@
                     
                     // 如果是人员排班页面，初始化并渲染表格
                     if (targetPage === 'scheduling') {
+                        // 设置默认日期范围
+                        setDefaultSchedulingDate();
+                        
                         // 添加人员排班页面的事件监听器
                         const startDateInput = document.getElementById('schedulingStartDate');
                         const endDateInput = document.getElementById('schedulingEndDate');
@@ -2160,6 +2235,9 @@
             // 检查当前是否是人员排班页面（如果是直接打开的链接）
             const currentPageElement = document.querySelector('.page-content:not(.hidden)');
             if (currentPageElement && currentPageElement.id === 'scheduling-page') {
+                // 设置默认日期范围
+                setDefaultSchedulingDate();
+                
                 // 初始化人员排班表
                 renderSchedulingTable();
                 
@@ -2429,20 +2507,28 @@
             const equipmentForm = document.getElementById('equipment-form');
             
             // 关闭模态框按钮点击事件
-            equipmentCloseModalBtn.addEventListener('click', closeEquipmentModal);
+            if (equipmentCloseModalBtn) {
+                equipmentCloseModalBtn.addEventListener('click', closeEquipmentModal);
+            }
             
             // 取消按钮点击事件
-            equipmentCancelBtn.addEventListener('click', closeEquipmentModal);
+            if (equipmentCancelBtn) {
+                equipmentCancelBtn.addEventListener('click', closeEquipmentModal);
+            }
             
             // 表单提交事件
-            equipmentForm.addEventListener('submit', saveEquipment);
+            if (equipmentForm) {
+                equipmentForm.addEventListener('submit', saveEquipment);
+            }
             
             // 点击模态框外部关闭模态框
-            equipmentModal.addEventListener('click', (e) => {
-                if (e.target === equipmentModal) {
-                    closeEquipmentModal();
-                }
-            });
+            if (equipmentModal) {
+                equipmentModal.addEventListener('click', (e) => {
+                    if (e.target === equipmentModal) {
+                        closeEquipmentModal();
+                    }
+                });
+            }
             
             // 维修记录模态框事件监听器
             const maintenanceModal = document.getElementById('maintenance-modal');
@@ -2451,20 +2537,28 @@
             const maintenanceForm = document.getElementById('maintenance-form');
             
             // 关闭模态框按钮点击事件
-            maintenanceCloseModalBtn.addEventListener('click', closeMaintenanceModal);
+            if (maintenanceCloseModalBtn) {
+                maintenanceCloseModalBtn.addEventListener('click', closeMaintenanceModal);
+            }
             
             // 取消按钮点击事件
-            maintenanceCancelBtn.addEventListener('click', closeMaintenanceModal);
+            if (maintenanceCancelBtn) {
+                maintenanceCancelBtn.addEventListener('click', closeMaintenanceModal);
+            }
             
             // 表单提交事件
-            maintenanceForm.addEventListener('submit', handleMaintenanceSubmit);
+            if (maintenanceForm) {
+                maintenanceForm.addEventListener('submit', handleMaintenanceSubmit);
+            }
             
             // 点击模态框外部关闭模态框
-            maintenanceModal.addEventListener('click', (e) => {
-                if (e.target === maintenanceModal) {
-                    closeMaintenanceModal();
-                }
-            });
+            if (maintenanceModal) {
+                maintenanceModal.addEventListener('click', (e) => {
+                    if (e.target === maintenanceModal) {
+                        closeMaintenanceModal();
+                    }
+                });
+            }
             
 
             
@@ -2990,43 +3084,59 @@
             }
             
             // 关闭模态框按钮点击事件
-            orderCloseModalBtn.addEventListener('click', closeOrderModal);
+            if (orderCloseModalBtn) {
+                orderCloseModalBtn.addEventListener('click', closeOrderModal);
+            }
             
             // 取消按钮点击事件
-            orderCancelBtn.addEventListener('click', closeOrderModal);
+            if (orderCancelBtn) {
+                orderCancelBtn.addEventListener('click', closeOrderModal);
+            }
             
             // 表单提交事件
-            orderForm.addEventListener('submit', saveOrder);
+            if (orderForm) {
+                orderForm.addEventListener('submit', saveOrder);
+            }
             
             // 点击模态框外部关闭模态框
-            orderModal.addEventListener('click', (e) => {
-                if (e.target === orderModal) {
-                    closeOrderModal();
-                }
-            });
+            if (orderModal) {
+                orderModal.addEventListener('click', (e) => {
+                    if (e.target === orderModal) {
+                        closeOrderModal();
+                    }
+                });
+            }
             
             // 客户输入框事件
-            customerInput.addEventListener('input', showCustomerDropdown);
-            customerInput.addEventListener('focus', showCustomerDropdown);
+            if (customerInput) {
+                customerInput.addEventListener('input', showCustomerDropdown);
+                customerInput.addEventListener('focus', showCustomerDropdown);
+            }
             
             // 图纸号输入框事件
-            drawingInput.addEventListener('input', updateDrawingDropdown);
-            drawingInput.addEventListener('focus', updateDrawingDropdown);
+            if (drawingInput) {
+                drawingInput.addEventListener('input', updateDrawingDropdown);
+                drawingInput.addEventListener('focus', updateDrawingDropdown);
+            }
             
             // 点击页面其他地方关闭下拉列表
             document.addEventListener('click', (e) => {
-                if (!customerDropdown.contains(e.target) && e.target !== customerInput) {
+                if (customerDropdown && !customerDropdown.contains(e.target) && e.target !== customerInput) {
                     customerDropdown.classList.add('hidden');
                 }
-                if (!drawingDropdown.contains(e.target) && e.target !== drawingInput) {
+                if (drawingDropdown && !drawingDropdown.contains(e.target) && e.target !== drawingInput) {
                     drawingDropdown.classList.add('hidden');
                 }
             });
             
             // 关闭模态框时隐藏所有下拉列表
             function closeOrderModal() {
-                orderModal.classList.add('hidden');
-                orderForm.reset();
+                if (orderModal) {
+                    orderModal.classList.add('hidden');
+                }
+                if (orderForm) {
+                    orderForm.reset();
+                }
                 hideAllDropdowns();
             }
             
@@ -3063,6 +3173,25 @@
             .card-shadow {
                 box-shadow: 0 2px 14px 0 rgba(0, 0, 0, 0.06);
             }
+        }
+        
+        /* 修复滚动条显示问题 */
+        .overflow-x-auto {
+            overflow-x: scroll !important;
+            display: block;
+            width: 100%;
+        }
+        
+        /* 确保表格宽度正确计算 */
+        #scheduling-page .overflow-x-auto {
+            overflow-x: scroll !important;
+        }
+        
+        /* 确保表格列不会被压缩 */
+        #scheduling-page table th,
+        #scheduling-page table td {
+            white-space: nowrap;
+            min-width: 80px;
         }
     </style>
 </head>
@@ -3352,7 +3481,7 @@
                         搜索结果：<span id="workOrderSearchCount">0</span> 条记录，工序数量合计：<span id="workOrderProcessTotal">0</span>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="min-w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="text-left py-3 px-4 font-medium text-gray-500 whitespace-nowrap">
@@ -3448,11 +3577,11 @@
                             <div class="flex items-end gap-2">
                                 <div>
                                     <label for="schedulingStartDate" class="text-sm text-gray-600 block mb-1">开始日期</label>
-                                    <input type="date" id="schedulingStartDate" class="border border-gray-300 rounded px-3 py-2 text-sm" value="2025-12-01">
+                                    <input type="date" id="schedulingStartDate" class="border border-gray-300 rounded px-3 py-2 text-sm">
                                 </div>
                                 <div>
                                     <label for="schedulingEndDate" class="text-sm text-gray-600 block mb-1">结束日期</label>
-                                    <input type="date" id="schedulingEndDate" class="border border-gray-300 rounded px-3 py-2 text-sm" value="2025-12-31">
+                                    <input type="date" id="schedulingEndDate" class="border border-gray-300 rounded px-3 py-2 text-sm">
                                 </div>
                             </div>
                             <!-- 操作按钮 -->
@@ -3479,7 +3608,7 @@
                                 红色：完成比例 > 105%
                             </span>
                         </div>
-                        <table class="w-full text-sm">
+                        <table class="min-w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="text-left py-3 px-4 font-medium text-gray-500 whitespace-nowrap sticky left-0 bg-white z-20">客户</th>
